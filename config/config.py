@@ -27,3 +27,5 @@ class Config:
 
     # Debug
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+
+    MODEL_NAME = "facebook/bart-large-mnli"

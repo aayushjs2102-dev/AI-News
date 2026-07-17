@@ -7,6 +7,7 @@ Handles all database operations for the articles table.
 from database.connection import DatabaseConnection
 
 
+
 class ArticleRepository:
 
     @staticmethod
@@ -17,7 +18,7 @@ class ArticleRepository:
         url: str,
         published_at,
         category: str,
-        cluster_id: str = None
+        cluster_name: str = None
     ):
         """
         Insert a new article.
@@ -32,7 +33,7 @@ class ArticleRepository:
             url,
             published_at,
             category,
-            cluster_id
+            cluster_name
         )
         VALUES
         (
@@ -55,7 +56,7 @@ class ArticleRepository:
                         url,
                         published_at,
                         category,
-                        cluster_id
+                        cluster_name
                     )
                 )
 
@@ -140,12 +141,12 @@ class ArticleRepository:
             connection.close()
 
     @staticmethod
-    def get_articles_by_cluster(cluster_id: str):
+    def get_articles_by_cluster(cluster_name: str):
 
         query = """
         SELECT *
         FROM articles
-        WHERE cluster_id=%s
+        WHERE cluster_name=%s
         ORDER BY published_at DESC;
         """
 
@@ -155,7 +156,7 @@ class ArticleRepository:
 
             with connection.cursor() as cursor:
 
-                cursor.execute(query, (cluster_id,))
+                cursor.execute(query, (cluster_name,))
 
                 return cursor.fetchall()
 
@@ -211,3 +212,133 @@ class ArticleRepository:
 
         finally:
             connection.close()
+
+    @staticmethod
+    def get_unclassified_articles():
+
+        query = """
+        SELECT *
+        FROM articles
+        WHERE cluster_name IS NULL
+        ORDER BY collected_at ASC;
+        """
+
+        connection = DatabaseConnection.get_connection()
+
+        try:
+
+            with connection.cursor() as cursor:
+
+                cursor.execute(query)
+
+                return cursor.fetchall()
+
+        finally:
+            connection.close()
+
+    @staticmethod
+    def update_cluster_name(
+        article_id: int,
+        cluster_name: str
+    ):
+
+        query = """
+        UPDATE articles
+        SET cluster_name = %s
+        WHERE id = %s;
+        """
+
+        connection = DatabaseConnection.get_connection()
+
+        try:
+
+            with connection.cursor() as cursor:
+
+                cursor.execute(
+                    query,
+                    (
+                        cluster_name,
+                        article_id
+                    )
+                )
+
+            connection.commit()
+
+        except Exception:
+            connection.rollback()
+            raise
+
+        finally:
+            connection.close()
+
+    
+
+    @staticmethod
+    def get_cluster_name(article_id: int):
+        """
+        Returns the cluster name for an article.
+
+        Parameters
+        ----------
+        article_id : int
+            ID of the article.
+
+        Returns
+        -------
+        str | None
+            Cluster name if found, otherwise None.
+        """
+
+        conn = DatabaseConnection.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT cluster_name
+            FROM articles
+            WHERE id = %s;
+        """, (article_id,))
+
+        row = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        if row is None:
+            return None
+
+        return row["cluster_name"]
+    
+
+    @staticmethod
+    def get_articles_by_clusters(cluster_names, limit=20):
+        """
+        Returns the newest articles belonging to the given clusters.
+        """
+
+        if not cluster_names:
+            return []
+
+        conn = DatabaseConnection.get_connection()
+        cursor = conn.cursor()
+
+        placeholders = ",".join(["%s"] * len(cluster_names))
+
+        query = f"""
+            SELECT *
+            FROM articles
+            WHERE cluster_name IN ({placeholders})
+            ORDER BY published_at DESC
+            LIMIT %s;
+        """
+
+        cursor.execute(
+            query,
+            (*cluster_names, limit)
+        )
+
+        rows = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return rows
