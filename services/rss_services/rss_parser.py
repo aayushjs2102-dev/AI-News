@@ -5,43 +5,106 @@ Downloads and parses RSS feeds into a standardized format.
 """
 
 from datetime import datetime
+
 import feedparser
+
+from utils.logger import get_logger
+
+logger = get_logger()
 
 
 class RSSParser:
+    """
+    Parses RSS feeds into standardized article dictionaries.
+    """
 
     @staticmethod
-    def parse_feed(source: str, feed_url: str):
+    def parse_feed(source: str, feed_url: str) -> list[dict]:
         """
         Parse a single RSS feed.
 
         Returns:
-            List[dict]
+            list[dict]
         """
 
-        feed = feedparser.parse(feed_url)
+        logger.info(f"Fetching RSS feed: {source} -> {feed_url}")
 
-        articles = []
+        try:
 
-        for entry in feed.entries:
+            feed = feedparser.parse(feed_url)
 
-            published = None
-
-            if hasattr(entry, "published_parsed") and entry.published_parsed:
-                published = datetime(
-                    *entry.published_parsed[:6]
+            # feedparser sets bozo=True when parsing fails
+            if getattr(feed, "bozo", False):
+                logger.warning(
+                    f"Malformed RSS feed detected: {feed_url}"
                 )
-            else:
-                published = datetime.now()
 
-            article = {
-                "source": source,
-                "title": getattr(entry, "title", ""),
-                "summary": getattr(entry, "summary", ""),
-                "url": getattr(entry, "link", ""),
-                "published_at": published
-            }
+            if not feed.entries:
+                logger.warning(
+                    f"No articles found in feed: {feed_url}"
+                )
+                return []
 
-            articles.append(article)
+            articles = []
 
-        return articles
+            for entry in feed.entries:
+
+                try:
+
+                    if (
+                        hasattr(entry, "published_parsed")
+                        and entry.published_parsed
+                    ):
+                        published = datetime(
+                            *entry.published_parsed[:6]
+                        )
+                    else:
+                        published = datetime.now()
+
+                    article = {
+                        "source": source,
+                        "title": getattr(
+                            entry,
+                            "title",
+                            "Untitled"
+                        ),
+                        "summary": getattr(
+                            entry,
+                            "summary",
+                            ""
+                        ),
+                        "url": getattr(
+                            entry,
+                            "link",
+                            ""
+                        ),
+                        "published_at": published
+                    }
+
+                    if not article["url"]:
+                        logger.warning(
+                            "Skipping article with missing URL."
+                        )
+                        continue
+
+                    articles.append(article)
+
+                except Exception:
+
+                    logger.exception(
+                        "Failed to parse an RSS entry."
+                    )
+
+            logger.info(
+                f"{source}: Parsed {len(articles)} articles."
+            )
+
+            return articles
+
+        except Exception:
+
+            logger.exception(
+                f"Unable to fetch RSS feed: {feed_url}"
+            )
+
+            return []
