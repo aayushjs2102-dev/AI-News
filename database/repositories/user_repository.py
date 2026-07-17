@@ -3,6 +3,9 @@ User Repository
 
 Handles all database operations for the users table.
 """
+from utils.logger import get_logger
+
+logger = get_logger()
 
 from database.connection import DatabaseConnection
 
@@ -24,23 +27,40 @@ class UserRepository:
         connection = DatabaseConnection.get_connection()
 
         try:
+
             with connection.cursor() as cursor:
+
                 cursor.execute(
                     query,
-                    (username, email, password_hash)
+                    (
+                        username,
+                        email,
+                        password_hash
+                    )
                 )
 
                 user_id = cursor.fetchone()["id"]
 
             connection.commit()
 
+            logger.info(
+                f"User '{username}' registered successfully."
+            )
+
             return user_id
 
         except Exception:
+
             connection.rollback()
+
+            logger.exception(
+                f"Failed to register user '{username}'."
+            )
+
             raise
 
         finally:
+
             connection.close()
 
     @staticmethod
@@ -55,11 +75,26 @@ class UserRepository:
         connection = DatabaseConnection.get_connection()
 
         try:
+
             with connection.cursor() as cursor:
+
                 cursor.execute(query, (username,))
-                return cursor.fetchone()
+
+                user = cursor.fetchone()
+
+                if user:
+                    logger.info(
+                        f"User '{username}' found."
+                    )
+                else:
+                    logger.warning(
+                        f"User '{username}' not found."
+                    )
+
+                return user
 
         finally:
+
             connection.close()
 
     @staticmethod
