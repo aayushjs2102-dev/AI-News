@@ -184,3 +184,30 @@ class ArticleRepository:
 
         finally:
             connection.close()
+
+
+    @staticmethod
+    def article_exists(url: str) -> bool:
+        """
+        Check whether an article with the given URL already exists.
+        """
+
+        query = """
+        SELECT EXISTS(
+            SELECT 1
+            FROM articles
+            WHERE url = %s
+        ) AS exists;
+        """
+
+        connection = DatabaseConnection.get_connection()
+
+        try:
+            with connection.cursor() as cursor:
+
+                cursor.execute(query, (url,))
+
+                return cursor.fetchone()["exists"]
+
+        finally:
+            connection.close()
