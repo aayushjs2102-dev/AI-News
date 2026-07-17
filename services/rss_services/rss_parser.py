@@ -10,6 +10,8 @@ import feedparser
 
 from utils.logger import get_logger
 
+from utils.http_client import HTTPClient
+
 logger = get_logger()
 
 
@@ -31,7 +33,13 @@ class RSSParser:
 
         try:
 
-            feed = feedparser.parse(feed_url)
+            response = HTTPClient.get(feed_url)
+
+            if response is None:
+                logger.error(f"Unable to download RSS feed: {feed_url}")
+                return []
+
+            feed = feedparser.parse(response.content)
 
             # feedparser sets bozo=True when parsing fails
             if getattr(feed, "bozo", False):
