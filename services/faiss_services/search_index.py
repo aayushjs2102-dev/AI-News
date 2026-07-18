@@ -24,9 +24,14 @@ INDEX_PATH = os.path.join(
     "article_index.faiss"
 )
 
-MAPPING_PATH = os.path.join(
+VECTOR_MAPPING_PATH = os.path.join(
     FAISS_DIR,
-    "article_mapping.pkl"
+    "vector_to_article.pkl"
+)
+
+REVERSE_MAPPING_PATH = os.path.join(
+    FAISS_DIR,
+    "article_to_vector.pkl"
 )
 
 
@@ -35,6 +40,7 @@ class FaissSearcher:
     _instance = None
     _index = None
     _mapping = None
+    _reverse_mapping = None
     _model = None
 
     def __new__(cls):
@@ -53,8 +59,11 @@ class FaissSearcher:
 
         self._index = faiss.read_index(INDEX_PATH)
 
-        with open(MAPPING_PATH, "rb") as file:
+        with open(VECTOR_MAPPING_PATH, "rb") as file:
             self._mapping = pickle.load(file)
+
+        with open(REVERSE_MAPPING_PATH, "rb") as file:
+            self._reverse_mapping = pickle.load(file)
 
         self._model = EmbeddingModel()
 
@@ -85,6 +94,60 @@ class FaissSearcher:
             similarity_scores[article_id] = float(score)
 
         articles = ArticleRepository.get_articles_by_ids(article_ids)
+
+        for article in articles:
+
+            article["similarity_score"] = similarity_scores.get(
+                article["id"],
+                0.0
+            )
+
+        return articles
+    
+
+    def similar_articles(
+    self,
+    article_id: int,
+    k: int = 6
+    ):
+
+        article = ArticleRepository.get_article_by_id(
+            article_id
+        )
+
+        if article is None:
+            return []
+
+        text = f"{article['title']}\n{article['summary']}"
+
+        query_vector = self._model.encode(text)
+
+        distances, indices = self._index.search(
+            query_vector.reshape(1, -1),
+            k
+        )
+
+        article_ids = []
+
+        similarity_scores = {}
+
+        for score, idx in zip(distances[0], indices[0]):
+
+            if idx == -1:
+                continue
+
+            candidate_id = self._mapping[idx]
+
+            if candidate_id == article_id:
+                continue
+
+            article_ids.append(candidate_id)
+
+            similarity_scores[candidate_id] = float(score)
+
+        articles = ArticleRepository.get_articles_by_ids(
+            article_ids
+        )
 
         for article in articles:
 

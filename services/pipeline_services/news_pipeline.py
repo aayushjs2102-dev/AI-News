@@ -10,6 +10,10 @@ from services.classification_services.classify_articles import (
     classify_articles
 )
 
+from services.faiss_services.update_index import (
+    update_faiss_index
+)
+
 
 def run_news_pipeline():
     """
@@ -20,11 +24,14 @@ def run_news_pipeline():
     print("STARTING NEWS PIPELINE")
     print("=" * 70)
 
-    #Step 1
+    # Step 1
     RSSCollector.collect()
 
-    #Step 2
+    # Step 2
     classify_articles()
+
+    # Step 3
+    update_faiss_index()
 
     print("\n" + "=" * 70)
     print("NEWS PIPELINE FINISHED")

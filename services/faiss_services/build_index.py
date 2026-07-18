@@ -5,13 +5,16 @@ Author: Aayush
 """
 
 import os
-import pickle
 
 import faiss
 import numpy as np
 
 from database.repositories.article_repository import ArticleRepository
 from services.faiss_services.embedding_model import EmbeddingModel
+from services.faiss_services.faiss_utils import (
+    save_index,
+    save_mappings
+)
 
 
 # ----------------------------------------------------------
@@ -22,16 +25,9 @@ BASE_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..")
 )
 
-FAISS_DIR = os.path.join(BASE_DIR, "faiss")
-
-INDEX_PATH = os.path.join(
-    FAISS_DIR,
-    "article_index.faiss"
-)
-
-MAPPING_PATH = os.path.join(
-    FAISS_DIR,
-    "article_mapping.pkl"
+FAISS_DIR = os.path.join(
+    BASE_DIR,
+    "faiss"
 )
 
 
@@ -41,7 +37,10 @@ MAPPING_PATH = os.path.join(
 
 def build_faiss_index():
 
-    os.makedirs(FAISS_DIR, exist_ok=True)
+    os.makedirs(
+        FAISS_DIR,
+        exist_ok=True
+    )
 
     print("Loading articles...")
 
@@ -57,7 +56,9 @@ def build_faiss_index():
 
     embeddings = []
 
-    mapping = {}
+    vector_to_article = {}
+
+    article_to_vector = {}
 
     for idx, article in enumerate(articles):
 
@@ -67,7 +68,9 @@ def build_faiss_index():
 
         embeddings.append(vector)
 
-        mapping[idx] = article["id"]
+        vector_to_article[idx] = article["id"]
+
+        article_to_vector[article["id"]] = idx
 
     embeddings = np.array(
         embeddings,
@@ -82,20 +85,16 @@ def build_faiss_index():
 
     index.add(embeddings)
 
-    faiss.write_index(
-        index,
-        INDEX_PATH
+    # ----------------------------------------------
+    # Save Index & Mappings
+    # ----------------------------------------------
+
+    save_index(index)
+
+    save_mappings(
+        vector_to_article,
+        article_to_vector
     )
-
-    with open(
-        MAPPING_PATH,
-        "wb"
-    ) as file:
-
-        pickle.dump(
-            mapping,
-            file
-        )
 
     print("--------------------------------")
 
@@ -103,9 +102,9 @@ def build_faiss_index():
 
     print(f"Vectors : {index.ntotal}")
 
-    print(f"Saved   : {INDEX_PATH}")
+    print("FAISS index saved.")
 
-    print(f"Mapping : {MAPPING_PATH}")
+    print("Mappings saved.")
 
 
 if __name__ == "__main__":

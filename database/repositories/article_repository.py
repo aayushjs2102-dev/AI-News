@@ -604,3 +604,60 @@ class ArticleRepository:
         ]
 
         return ordered_articles
+    
+
+    @staticmethod
+    def get_unindexed_articles(indexed_article_ids):
+        """
+        Returns articles that are not yet present in the FAISS index.
+
+        Parameters
+        ----------
+        indexed_article_ids : list[int] | set[int]
+            Article IDs that already exist in the FAISS index.
+
+        Returns
+        -------
+        list[dict]
+            Articles that still need embeddings.
+        """
+
+        connection = DatabaseConnection.get_connection()
+
+        try:
+
+            with connection.cursor() as cursor:
+
+                # No indexed articles yet
+                if not indexed_article_ids:
+
+                    cursor.execute(
+                        """
+                        SELECT
+                            id,
+                            title,
+                            summary
+                        FROM articles
+                        ORDER BY id;
+                        """
+                    )
+
+                    return cursor.fetchall()
+
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        title,
+                        summary
+                    FROM articles
+                    WHERE NOT (id = ANY(%s))
+                    ORDER BY id;
+                    """,
+                    (list(indexed_article_ids),)
+                )
+
+                return cursor.fetchall()
+
+        finally:
+            connection.close()

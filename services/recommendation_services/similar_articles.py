@@ -2,9 +2,12 @@
 Similar Articles Service
 """
 
-from database.repositories.article_repository import (
-    ArticleRepository
+from services.faiss_services.search_index import (
+    FaissSearcher
 )
+
+
+_searcher = FaissSearcher()
 
 
 def get_similar_articles(
@@ -12,10 +15,10 @@ def get_similar_articles(
     limit: int = 5
 ):
     """
-    Returns articles related to the given article.
+    Returns semantically similar articles.
     """
 
-    return ArticleRepository.get_similar_articles(
+    return _searcher.similar_articles(
         article_id=article_id,
-        limit=limit
+        k=limit + 1
     )
