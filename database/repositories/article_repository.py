@@ -342,3 +342,98 @@ class ArticleRepository:
         conn.close()
 
         return rows
+    
+
+    @staticmethod
+    def get_trending_articles(limit: int = 20):
+        """
+        Returns trending articles ranked by interaction score.
+        """
+
+        conn = DatabaseConnection.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+
+                a.*,
+
+                COALESCE(
+                    SUM(
+                        CASE ui.interaction_type
+                            WHEN 'view' THEN 1
+                            WHEN 'like' THEN 3
+                            WHEN 'bookmark' THEN 5
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS trending_score
+
+            FROM articles a
+
+            LEFT JOIN user_interactions ui
+                ON a.id = ui.article_id
+
+            GROUP BY a.id
+
+            ORDER BY
+                trending_score DESC,
+                a.published_at DESC
+
+            LIMIT %s;
+        """, (limit,))
+
+        rows = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return rows
+    
+
+    @staticmethod
+    def get_candidate_articles(cluster_names: list[str], limit: int = 50):
+        """
+        Returns candidate articles from the given clusters.
+
+        Parameters
+        ----------
+        cluster_names : list[str]
+            Preferred cluster names.
+
+        limit : int
+            Maximum number of articles to return.
+
+        Returns
+        -------
+        list[dict]
+        """
+
+        if not cluster_names:
+            return []
+
+        conn = DatabaseConnection.get_connection()
+        cursor = conn.cursor()
+
+        placeholders = ",".join(["%s"] * len(cluster_names))
+
+        query = f"""
+            SELECT *
+            FROM articles
+            WHERE cluster_name IN ({placeholders})
+            ORDER BY published_at DESC
+            LIMIT %s;
+        """
+
+        cursor.execute(
+            query,
+            (*cluster_names, limit)
+        )
+
+        rows = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return rows

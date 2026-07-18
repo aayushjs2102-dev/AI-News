@@ -9,7 +9,11 @@ print()
 for article in articles:
 
     print(
+
+        article["published_at"],
+
         article["cluster_name"],
-        "|",
+
         article["title"]
+
     )

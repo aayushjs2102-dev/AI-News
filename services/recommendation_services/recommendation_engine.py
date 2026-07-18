@@ -2,8 +2,20 @@
 Recommendation Engine
 """
 
-from database.repositories.article_repository import ArticleRepository
-from database.repositories.preference_repository import PreferenceRepository
+from database.repositories.article_repository import (
+    ArticleRepository
+)
+
+from database.repositories.preference_repository import (
+    PreferenceRepository
+)
+
+from services.recommendation_services.scorer import (
+    score_articles
+)
+
+
+TOP_CLUSTERS = 3
 
 
 def get_recommendations(
@@ -11,22 +23,39 @@ def get_recommendations(
     limit: int = 20
 ):
     """
-    Returns personalized news recommendations.
+    Returns personalized recommendations.
     """
 
-    preferences = PreferenceRepository.get_preferences(user_id)
-
-    if not preferences:
-        return []
-
-    clusters = [
-        row["cluster_name"]
-        for row in preferences[:3]
-    ]
-
-    articles = ArticleRepository.get_articles_by_clusters(
-        clusters,
-        limit
+    preferences = PreferenceRepository.get_preferences(
+        user_id
     )
 
-    return articles
+    # Cold Start
+
+    if not preferences:
+
+        return ArticleRepository.get_trending_articles(
+            limit
+        )
+
+    clusters = [
+
+        row["cluster_name"]
+
+        for row in preferences[:TOP_CLUSTERS]
+
+    ]
+
+    candidates = ArticleRepository.get_candidate_articles(
+
+        clusters,
+
+        limit * 3
+
+    )
+
+    ranked_articles = score_articles(
+        candidates
+    )
+
+    return ranked_articles[:limit]
