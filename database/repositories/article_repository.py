@@ -437,3 +437,57 @@ class ArticleRepository:
         conn.close()
 
         return rows
+    
+
+    @staticmethod
+    def search_articles(query: str, limit: int = 20):
+        """
+        Search articles by title and summary.
+
+        Parameters
+        ----------
+        query : str
+            Search keyword entered by the user.
+
+        limit : int
+            Maximum number of results.
+
+        Returns
+        -------
+        list[dict]
+            Matching articles.
+        """
+
+        sql = """
+        SELECT *
+        FROM articles
+        WHERE
+            title ILIKE %s
+            OR
+            summary ILIKE %s
+        ORDER BY
+            published_at DESC
+        LIMIT %s;
+        """
+
+        connection = DatabaseConnection.get_connection()
+
+        try:
+
+            with connection.cursor() as cursor:
+
+                search_term = f"%{query}%"
+
+                cursor.execute(
+                    sql,
+                    (
+                        search_term,
+                        search_term,
+                        limit
+                    )
+                )
+
+                return cursor.fetchall()
+
+        finally:
+            connection.close()
