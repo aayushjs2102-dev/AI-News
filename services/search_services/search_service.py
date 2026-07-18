@@ -8,13 +8,28 @@ from database.repositories.article_repository import (
     ArticleRepository
 )
 
+from services.faiss_services.search_index import (
+    FaissSearcher
+)
+
+
+# ----------------------------------------------------------
+# Singleton FAISS Searcher
+# ----------------------------------------------------------
+
+_searcher = FaissSearcher()
+
+
+# ----------------------------------------------------------
+# Search Articles
+# ----------------------------------------------------------
 
 def search_articles(
     query: str,
     limit: int = 20
 ):
     """
-    Search articles.
+    Search articles using FAISS semantic search.
 
     Parameters
     ----------
@@ -32,7 +47,7 @@ def search_articles(
     if not query:
         return []
 
-    return ArticleRepository.search_articles(
+    return _searcher.search(
         query=query,
-        limit=limit
+        k=limit
     )

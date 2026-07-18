@@ -1,19 +1,18 @@
-from services.recommendation_services.recommendation_engine import (
-    get_recommendations
+from services.faiss_services.search_index import FaissSearcher
+
+searcher = FaissSearcher()
+
+results = searcher.search(
+    "Artificial Intelligence in healthcare",
+    k=5
 )
 
-articles = get_recommendations(1)
+for article in results:
 
-print()
+    print()
 
-for article in articles:
+    print(article["id"])
 
-    print(
+    print(article["title"])
 
-        article["published_at"],
-
-        article["cluster_name"],
-
-        article["title"]
-
-    )
+    print(article["cluster_name"])

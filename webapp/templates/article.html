@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ article.title }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <h2>{{ article.title }}</h2>
+
+    <hr>
+
+    <p>
+        <strong>Source:</strong>
+        {{ article.source }}
+    </p>
+
+    <p>
+        <strong>Published:</strong>
+        {{ article.published_at }}
+    </p>
+
+    <p>
+        <strong>Category:</strong>
+        {{ article.category }}
+    </p>
+
+    <p>
+        <strong>Cluster:</strong>
+        {{ article.cluster_name }}
+    </p>
+
+    <hr>
+
+    <h3>Summary</h3>
+
+    <p>
+        {{ article.summary }}
+    </p>
+
+    <br>
+
+    <a
+        href="{{ article.url }}"
+        target="_blank"
+        class="btn btn-primary">
+
+        🌐 Read Original Article
+
+    </a>
+
+    <hr>
+
+    <h3>Related Articles</h3>
+
+    {% if similar_articles %}
+
+        <ul>
+
+        {% for similar in similar_articles %}
+
+            <li>
+
+                <a href="{{ url_for(
+                    'article.open_article',
+                    article_id=similar['id']
+                ) }}">
+
+                    {{ similar["title"] }}
+
+                </a>
+
+            </li>
+
+        {% endfor %}
+
+        </ul>
+
+    {% else %}
+
+        <p>No related articles available.</p>
+
+    {% endif %}
+
+    <a
+        href="{{ url_for('dashboard.dashboard') }}"
+        class="btn btn-secondary">
+
+        ← Back to Dashboard
+
+    </a>
+
+</div>
+
+{% endblock %}

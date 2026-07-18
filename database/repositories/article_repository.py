@@ -491,3 +491,116 @@ class ArticleRepository:
 
         finally:
             connection.close()
+
+    @staticmethod
+    def get_similar_articles(
+        article_id: int,
+        limit: int = 5
+    ):
+        """
+        Returns articles from the same cluster.
+        """
+
+        conn = DatabaseConnection.get_connection()
+
+        try:
+            with conn.cursor() as cursor:
+
+                # Find the current article's cluster
+                cursor.execute(
+                    """
+                    SELECT cluster_name
+                    FROM articles
+                    WHERE id = %s
+                    """,
+                    (article_id,)
+                )
+
+                row = cursor.fetchone()
+
+                if row is None:
+                    return []
+
+                cluster = row["cluster_name"]
+
+                cursor.execute(
+                    """
+                    SELECT *
+                    FROM articles
+                    WHERE
+                        cluster_name = %s
+                        AND id <> %s
+                    ORDER BY published_at DESC
+                    LIMIT %s
+                    """,
+                    (
+                        cluster,
+                        article_id,
+                        limit
+                    )
+                )
+
+                return cursor.fetchall()
+
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_all_articles():
+
+        connection = DatabaseConnection.get_connection()
+
+        cursor = connection.cursor()
+
+        cursor.execute(
+            """
+            SELECT
+                id,
+                title,
+                summary
+            FROM articles
+            ORDER BY id;
+            """
+        )
+
+        rows = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+        return rows
+    
+
+    @staticmethod
+    def get_articles_by_ids(article_ids):
+
+        if not article_ids:
+            return []
+
+        connection = DatabaseConnection.get_connection()
+
+        cursor = connection.cursor()
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM articles
+            WHERE id = ANY(%s);
+            """,
+            (article_ids,)
+        )
+
+        articles = cursor.fetchall()
+
+        article_map = {
+            article["id"]: article
+            for article in articles
+        }
+
+        ordered_articles = [
+            article_map[id]
+            for id in article_ids
+            if id in article_map
+        ]
+
+        return ordered_articles

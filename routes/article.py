@@ -2,10 +2,14 @@ from flask import (
     Blueprint,
     redirect,
     session,
-    url_for
+    url_for,
+    render_template
 )
 
-from flask import request
+from services.recommendation_services.similar_articles import (
+    get_similar_articles
+)
+
 
 from database.repositories.article_repository import (
     ArticleRepository
@@ -63,6 +67,10 @@ def open_article(article_id):
     article = ArticleRepository.get_article_by_id(
         article_id
     )
+    similar_articles = get_similar_articles(
+        article_id=article_id,
+        limit=5
+    )
 
     if article is None:
         return "Article not found", 404
@@ -73,6 +81,8 @@ def open_article(article_id):
         interaction_type="view"
     )
 
-    return redirect(
-        article["url"]
+    return render_template(
+        "article.html",
+        article=article,
+        similar_articles=similar_articles
     )
