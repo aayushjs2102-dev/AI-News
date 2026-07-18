@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+
+<h2>
+
+Welcome {{ session["username"] }}
+
+</h2>
+
+<p>
+
+Dashboard coming in Sprint 12.3
+
+</p>
+
+<a href="{{ url_for('auth.logout') }}">
+
+Logout
+
+</a>
+
+{% endblock %}

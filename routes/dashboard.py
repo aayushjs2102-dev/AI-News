@@ -1,5 +1,10 @@
-from flask import Blueprint
-from flask import render_template
+from flask import (
+    Blueprint,
+    render_template,
+    session,
+    redirect,
+    url_for
+)
 
 dashboard_bp = Blueprint(
     "dashboard",
@@ -9,4 +14,20 @@ dashboard_bp = Blueprint(
 
 @dashboard_bp.route("/")
 def home():
-    return render_template("index.html")
+
+    return render_template(
+        "index.html"
+    )
+
+
+@dashboard_bp.route("/dashboard")
+def dashboard():
+
+    if "user_id" not in session:
+        return redirect(
+            url_for("auth.login")
+        )
+
+    return render_template(
+        "dashboard.html"
+    )
