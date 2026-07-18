@@ -20,6 +20,7 @@ class RSSCollector:
         total_inserted = 0
         total_skipped = 0
 
+
         print("\n" + "=" * 60)
         print("RSS COLLECTION STARTED")
         print("=" * 60)
@@ -74,7 +75,7 @@ class RSSCollector:
                         url=article["url"],
                         published_at=article["published_at"],
                         category=category,
-                        cluster_id=None
+                        cluster_name=None
                     )
 
                     source_inserted += 1
@@ -93,3 +94,4 @@ class RSSCollector:
         print(f"Skipped        : {total_skipped}")
 
         print("=" * 60)
+

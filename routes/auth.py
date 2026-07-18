@@ -74,6 +74,7 @@ def login():
 
             session["user_id"] = user["id"]
             session["username"] = user["username"]
+            session["is_authenticated"] = True
 
             return redirect(
                 url_for("dashboard.dashboard")

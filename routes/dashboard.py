@@ -6,6 +6,10 @@ from flask import (
     url_for
 )
 
+from services.recommendation_services.recommendation_engine import (
+    get_recommendations
+)
+
 dashboard_bp = Blueprint(
     "dashboard",
     __name__
@@ -23,11 +27,17 @@ def home():
 @dashboard_bp.route("/dashboard")
 def dashboard():
 
-    if "user_id" not in session:
+    if not session.get("is_authenticated"):
         return redirect(
             url_for("auth.login")
         )
 
+    articles = get_recommendations(
+        user_id=session["user_id"],
+        limit=20
+    )
+
     return render_template(
-        "dashboard.html"
+        "dashboard.html",
+        articles=articles
     )

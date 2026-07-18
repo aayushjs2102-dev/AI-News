@@ -7,21 +7,105 @@ Dashboard
 {% block content %}
 
 <h2>
-
-Welcome {{ session["username"] }}
-
+    Welcome {{ session["username"] }}
 </h2>
 
 <p>
-
-Dashboard coming in Sprint 12.3
-
+    Personalized news recommendations based on your interests.
 </p>
 
-<a href="{{ url_for('auth.logout') }}">
+<p>
+    <a href="{{ url_for('auth.logout') }}">
+        Logout
+    </a>
+</p>
 
-Logout
+<hr>
 
-</a>
+{% if articles %}
+
+    {% for article in articles %}
+
+        <div class="article-card">
+
+            <h3>
+                {{ article["title"] }}
+            </h3>
+
+            <p>
+                {{ article["summary"] }}
+            </p>
+
+            <p>
+                <strong>Source:</strong>
+                {{ article["source"] }}
+            </p>
+
+            <p>
+                <strong>Category:</strong>
+                {{ article["category"] }}
+            </p>
+
+            <p>
+                <strong>Cluster:</strong>
+                {{ article["cluster_name"] }}
+            </p>
+
+            <div class="article-actions">
+
+                <!-- Like -->
+
+                <form
+                    action="{{ url_for('article.like_article',
+                                       article_id=article['id']) }}"
+                    method="POST"
+                    style="display:inline;">
+
+                    <button type="submit">
+                        👍 Like
+                    </button>
+
+                </form>
+
+                <!-- Bookmark -->
+
+                <form
+                    action="{{ url_for('article.bookmark_article',
+                                       article_id=article['id']) }}"
+                    method="POST"
+                    style="display:inline;">
+
+                    <button type="submit">
+                        🔖 Bookmark
+                    </button>
+
+                </form>
+
+                <!-- Read Article -->
+
+                <a href="{{ url_for('article.open_article',
+                                    article_id=article['id']) }}">
+
+                    📖 Read Article
+
+                </a>
+
+            </div>
+
+        </div>
+
+        <hr>
+
+    {% endfor %}
+
+{% else %}
+
+    <h3>No recommendations available.</h3>
+
+    <p>
+        Read a few articles to help us personalize your news feed.
+    </p>
+
+{% endif %}
 
 {% endblock %}
