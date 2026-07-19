@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}
+Analytics Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>
+
+                📊 Analytics Dashboard
+
+            </h2>
+
+            <p>
+
+                Monitor the health and usage of the AI News Recommendation
+                System.
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+
+            <h3>Total Users</h3>
+
+            <div class="stat-value">
+
+                {{ total_users }}
+
+            </div>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h3>Total Articles</h3>
+
+            <div class="stat-value">
+
+                {{ total_articles }}
+
+            </div>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h3>Articles Today</h3>
+
+            <div class="stat-value">
+
+                {{ articles_today }}
+
+            </div>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h3>Total Likes</h3>
+
+            <div class="stat-value">
+
+                {{ total_likes }}
+
+            </div>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h3>Total Bookmarks</h3>
+
+            <div class="stat-value">
+
+                {{ total_bookmarks }}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="analytics-grid">
+
+        <div class="card">
+
+            <h3>
+
+                📈 Top Clusters
+
+            </h3>
+
+            <canvas id="clusterChart"></canvas>
+
+        </div>
+
+        <div class="card">
+
+            <h3>
+
+                📰 Top News Sources
+
+            </h3>
+
+            <canvas id="sourceChart"></canvas>
+
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <h3>
+
+            👥 Recent User Activity
+
+        </h3>
+
+        {% if recent_interactions %}
+
+        <table class="analytics-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>User</th>
+
+                    <th>Article</th>
+
+                    <th>Interaction</th>
+
+                    <th>Time</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for item in recent_interactions %}
+
+                <tr>
+
+                    <td>{{ item.username }}</td>
+
+                    <td>{{ item.title }}</td>
+
+                    <td>{{ item.interaction_type }}</td>
+
+                    <td>{{ item.interaction_time }}</td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        {% else %}
+
+            <p>
+
+                No recent activity available.
+
+            </p>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+<script>
+
+window.clusterData = {
+
+    labels: [
+
+        {% for cluster in top_clusters %}
+            "{{ cluster.cluster_name }}",
+        {% endfor %}
+
+    ],
+
+    values: [
+
+        {% for cluster in top_clusters %}
+            {{ cluster.count }},
+        {% endfor %}
+
+    ]
+
+};
+
+window.sourceData = {
+
+    labels: [
+
+        {% for source in top_sources %}
+            "{{ source.source }}",
+        {% endfor %}
+
+    ],
+
+    values: [
+
+        {% for source in top_sources %}
+            {{ source.count }},
+        {% endfor %}
+
+    ]
+
+};
+
+</script>
+
+{% endblock %}

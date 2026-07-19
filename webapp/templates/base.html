@@ -5,7 +5,13 @@
 
     <meta charset="UTF-8">
 
-    <title>{% block title %}AI News{% endblock %}</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}AI News{% endblock %}
+    </title>
 
     <link
         rel="stylesheet"
@@ -19,6 +25,48 @@
 
     <h1>AI News Recommendation System</h1>
 
+    {% if session.get("user_id") %}
+
+    <nav>
+
+        <ul>
+
+            <li>
+                <a href="{{ url_for('dashboard.dashboard') }}">
+                    Dashboard
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ url_for('search.search') }}">
+                    Search
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ url_for('assistant.assistant') }}">
+                    AI Assistant
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ url_for('analytics.analytics') }}">
+                    Analytics
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ url_for('auth.logout') }}">
+                    Logout
+                </a>
+            </li>
+
+        </ul>
+
+    </nav>
+
+    {% endif %}
+
 </header>
 
 <main>
@@ -28,6 +76,20 @@
     {% endblock %}
 
 </main>
+
+<footer>
+
+    <hr>
+
+    <p>
+
+        AI News Recommendation System
+
+    </p>
+
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 

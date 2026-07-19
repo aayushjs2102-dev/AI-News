@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}
+AI Assistant
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>
+                🤖 AI News Assistant
+            </h2>
+
+            <p>
+                Ask questions about the latest news collected by the system.
+                Every answer is grounded in your indexed news articles.
+            </p>
+
+        </div>
+
+    </div>
+
+    <form method="POST" id="assistant-form">
+
+        <div class="assistant-input">
+
+            <textarea
+                id="question"
+                name="question"
+                rows="4"
+                placeholder="Ask something like 'Summarize today's technology news'..."
+                required>{{ question }}</textarea>
+
+        </div>
+
+        <button
+            id="ask-button"
+            type="submit">
+
+            🚀 Ask Assistant
+
+        </button>
+
+    </form>
+
+    {% if not answer %}
+
+    <div class="assistant-empty">
+
+        <h3>
+
+            Ask anything about your news collection
+
+        </h3>
+
+        <ul>
+
+            <li>Summarize today's AI news</li>
+
+            <li>What is NASA planning for the Moon?</li>
+
+            <li>What happened in world politics today?</li>
+
+            <li>Give me the latest cybersecurity news.</li>
+
+        </ul>
+
+    </div>
+
+    {% endif %}
+
+    {% if answer %}
+
+    <div class="conversation">
+
+        <div class="user-message">
+
+            <div class="message-title">
+
+                👤 You
+
+            </div>
+
+            <div class="message-box">
+
+                {{ question }}
+
+            </div>
+
+        </div>
+
+        <div class="assistant-message">
+
+            <div class="message-title">
+
+                🤖 AI Assistant
+
+            </div>
+
+            {% if success %}
+
+            <div class="answer-box">
+
+                {{ answer }}
+
+            </div>
+
+            {% else %}
+
+            <div class="error-box">
+
+                {{ answer }}
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+    {% if articles %}
+
+    <div class="sources-section">
+
+        <h3>
+
+            📚 Sources Used
+
+        </h3>
+
+        {% for article in articles %}
+
+        <div class="card">
+
+            <div class="source-header">
+
+                <strong>
+
+                    {{ article.source }}
+
+                </strong>
+
+                {% if article.similarity_score is defined %}
+
+                <span class="score">
+
+                    {{ "%.1f"|format(article.similarity_score * 100) }}%
+
+                    Match
+
+                </span>
+
+                {% endif %}
+
+            </div>
+
+            <h4>
+
+                {{ article.title }}
+
+            </h4>
+
+            <p>
+
+                {{ article.summary }}
+
+            </p>
+
+            <div class="metadata">
+
+                {% if article.cluster_name %}
+
+                <span class="badge">
+
+                    {{ article.cluster_name }}
+
+                </span>
+
+                {% endif %}
+
+                {% if article.category %}
+
+                <span class="badge">
+
+                    {{ article.category }}
+
+                </span>
+
+                {% endif %}
+
+            </div>
+
+            <div class="article-actions">
+
+                <a
+                    class="btn"
+                    href="{{ article.url }}"
+                    target="_blank">
+
+                    📖 Read Original Article
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

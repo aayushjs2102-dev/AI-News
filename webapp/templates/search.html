@@ -1,87 +1,161 @@
 {% extends "base.html" %}
 
 {% block title %}
-Search
+Search News
 {% endblock %}
 
 {% block content %}
 
-<h2>Search News</h2>
+<div class="container">
 
-<form method="GET" action="{{ url_for('search.search') }}">
+    <div class="page-header">
 
-    <input
-        type="text"
-        name="q"
-        placeholder="Search news..."
-        value="{{ query }}"
-        style="width:350px; padding:8px;">
+        <div>
 
-    <button type="submit">
-        Search
-    </button>
-
-</form>
-
-<hr>
-
-{% if query %}
-
-    <h3>
-        Results for "{{ query }}"
-    </h3>
-
-{% endif %}
-
-{% if articles %}
-
-    {% for article in articles %}
-
-        <div class="article-card">
-
-            <h3>{{ article["title"] }}</h3>
-
-            <p>{{ article["summary"] }}</p>
+            <h2>Semantic News Search</h2>
 
             <p>
-
-                <strong>Source:</strong>
-                {{ article["source"] }}
-
-                |
-
-                <strong>Category:</strong>
-                {{ article["category"] }}
-
+                Search the news collection using the FAISS semantic search engine.
             </p>
-
-            <p>
-
-                <strong>Cluster:</strong>
-                {{ article["cluster_name"] }}
-
-            </p>
-
-            <a
-                href="{{ url_for(
-                    'article.open_article',
-                    article_id=article['id']
-                ) }}">
-
-                📖 Read Article
-
-            </a>
 
         </div>
 
-        <hr>
+    </div>
 
-    {% endfor %}
+    <form
+        method="GET"
+        action="{{ url_for('search.search') }}">
 
-{% elif query %}
+        <div class="search-box">
 
-    <h3>No articles found.</h3>
+            <input
+                type="text"
+                name="q"
+                placeholder="Search for technology, politics, AI, sports..."
+                value="{{ query }}"
+                autocomplete="off">
 
-{% endif %}
+            <button type="submit">
+
+                🔍 Search
+
+            </button>
+
+        </div>
+
+    </form>
+
+    {% if query %}
+
+        <div class="search-summary">
+
+            Results for
+
+            <strong>
+
+                "{{ query }}"
+
+            </strong>
+
+        </div>
+
+    {% endif %}
+
+    {% if articles %}
+
+        {% for article in articles %}
+
+        <div class="card">
+
+            <div class="source-header">
+
+                <strong>
+
+                    {{ article["source"] }}
+
+                </strong>
+
+                {% if article.get("similarity_score") %}
+
+                <span class="score">
+
+                    Similarity
+
+                    {{ "%.1f"|format(article["similarity_score"] * 100) }}%
+
+                </span>
+
+                {% endif %}
+
+            </div>
+
+            <h3>
+
+                {{ article["title"] }}
+
+            </h3>
+
+            <p>
+
+                {{ article["summary"] }}
+
+            </p>
+
+            <div class="metadata">
+
+                <span class="badge">
+
+                    {{ article["category"] }}
+
+                </span>
+
+                <span class="badge">
+
+                    {{ article["cluster_name"] }}
+
+                </span>
+
+            </div>
+
+            <div class="article-actions">
+
+                <a
+                    class="btn"
+                    href="{{ url_for(
+                        'article.open_article',
+                        article_id=article['id']
+                    ) }}">
+
+                    📖 Read Article
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    {% elif query %}
+
+        <div class="card">
+
+            <h3>
+
+                No articles found
+
+            </h3>
+
+            <p>
+
+                Try using broader keywords or different phrasing.
+
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
 
 {% endblock %}

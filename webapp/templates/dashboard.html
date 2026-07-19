@@ -6,90 +6,110 @@ Dashboard
 
 {% block content %}
 
-<h2>
-    Welcome {{ session["username"] }}
-</h2>
+<div class="container">
 
-<p>
-    Personalized news recommendations based on your interests.
-</p>
+    <div class="page-header">
 
-<p>
-    <a href="{{ url_for('auth.logout') }}">
-        Logout
-    </a>
+        <div>
 
-    |
-    <a href="{{ url_for('search.search') }}">
-        🔍 Search News
-    </a>
-</p>
+            <h2>
+                Welcome, {{ session["username"] }} 👋
+            </h2>
 
-<hr>
+            <p>
+                Personalized news recommendations based on your reading interests.
+            </p>
 
-{% if articles %}
+        </div>
 
-    {% for article in articles %}
+        <div class="page-actions">
 
-        <div class="article-card">
+            <a
+                class="btn"
+                href="{{ url_for('search.search') }}">
+
+                🔍 Search News
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <hr>
+
+    {% if articles %}
+
+        {% for article in articles %}
+
+        <div class="card">
+
+            <div class="source-header">
+
+                <strong>
+                    {{ article["source"] }}
+                </strong>
+
+                <span>
+
+                    {{ article["category"] }}
+
+                </span>
+
+            </div>
 
             <h3>
+
                 {{ article["title"] }}
+
             </h3>
 
             <p>
+
                 {{ article["summary"] }}
+
             </p>
 
             <p>
-                <strong>Source:</strong>
-                {{ article["source"] }}
-            </p>
 
-            <p>
-                <strong>Category:</strong>
-                {{ article["category"] }}
-            </p>
-
-            <p>
                 <strong>Cluster:</strong>
+
                 {{ article["cluster_name"] }}
+
             </p>
 
             <div class="article-actions">
 
-                <!-- Like -->
-
                 <form
                     action="{{ url_for('article.like_article',
                                        article_id=article['id']) }}"
-                    method="POST"
-                    style="display:inline;">
+                    method="POST">
 
                     <button type="submit">
+
                         👍 Like
+
                     </button>
 
                 </form>
-
-                <!-- Bookmark -->
 
                 <form
                     action="{{ url_for('article.bookmark_article',
                                        article_id=article['id']) }}"
-                    method="POST"
-                    style="display:inline;">
+                    method="POST">
 
                     <button type="submit">
+
                         🔖 Bookmark
+
                     </button>
 
                 </form>
 
-                <!-- Read Article -->
-
-                <a href="{{ url_for('article.open_article',
-                                    article_id=article['id']) }}">
+                <a
+                    class="btn"
+                    href="{{ url_for('article.open_article',
+                                     article_id=article['id']) }}">
 
                     📖 Read Article
 
@@ -99,18 +119,35 @@ Dashboard
 
         </div>
 
-        <hr>
+        {% endfor %}
 
-    {% endfor %}
+    {% else %}
 
-{% else %}
+        <div class="card">
 
-    <h3>No recommendations available.</h3>
+            <h3>
 
-    <p>
-        Read a few articles to help us personalize your news feed.
-    </p>
+                No recommendations available
 
-{% endif %}
+            </h3>
+
+            <p>
+
+                Read a few articles and interact with them.
+
+            </p>
+
+            <p>
+
+                Your recommendation engine will begin learning your interests
+                and will personalize your dashboard.
+
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
 
 {% endblock %}
